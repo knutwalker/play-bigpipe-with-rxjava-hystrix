@@ -1,0 +1,20 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET        /                       controllers.Application.index
+
+GET        /profile-views          controllers.ProfileViews.index(embed: Boolean ?=        true)
+GET        /profile-updates        controllers.ProfileUpdates.index(embed: Boolean ?=        true)
+
+GET        /aggregate              controllers.Aggregator.index
+
+
+GET        /pv-stream               controllers.ProfileViewsEnum.index
+
+#GET        /new-kittens         controllers.NewKittens.index(embedded: Boolean ?= true)
+#GET        /profile-views       controllers.ProfileViews.index(embedded: Boolean ?= true)
+
+# Map static resources from the /public folder to the /assets URL path
+GET        /assets/*file           controllers.Assets.at(path="/public", file)

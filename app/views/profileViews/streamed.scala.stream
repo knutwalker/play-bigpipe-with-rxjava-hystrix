@@ -1,0 +1,17 @@
+@(body: util.HtmlObservable)
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+    </head>
+    <body>
+      <div class="news">
+        <h1>Your Profile Views</h1>
+        <div id="profile-views"></div>
+        <div id="kittens-views"></div>
+      </div>
+    </body>
+  @body
+</html>
