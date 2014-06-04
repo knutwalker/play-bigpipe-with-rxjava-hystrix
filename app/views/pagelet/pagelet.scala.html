@@ -1,0 +1,10 @@
+@(content: play.twirl.api.Html, id: String, scripts: List[String], styles: List[String])
+<script type="text/x-html-stream" id="x-stream-@id">@content</script>
+<script type="text/javascript">
+  BigPipe.inject({
+    id: "@id",
+    html: document.getElementById("x-stream-@id").innerHTML,
+    scripts: [@play.twirl.api.Html(scripts.mkString(","))],
+    styles: [@play.twirl.api.Html(styles.mkString(","))]
+  });
+</script>

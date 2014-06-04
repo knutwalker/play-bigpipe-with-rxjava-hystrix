@@ -1,0 +1,6 @@
+@()
+<div class="kh-post" id="profile-updates-module">
+  <h3 class="kh-post-title">Your Profile Updates</h3>
+  <div id="new-comments"></div>
+  <div id="new-likes"></div>
+</div>

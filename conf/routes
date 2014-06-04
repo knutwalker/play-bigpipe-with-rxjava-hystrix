@@ -3,18 +3,15 @@
 # ~~~~
 
 # Home page
-GET        /                       controllers.Application.index
+GET        /                       controllers.Aggregator.index
+GET        /blocking               controllers.Aggregator.blocking
 
-GET        /profile-views          controllers.ProfileViews.index(embed: Boolean ?=        true)
-GET        /profile-updates        controllers.ProfileUpdates.index(embed: Boolean ?=        true)
+GET        /pv                     controllers.ProfileViews.index
+GET        /pu                     controllers.ProfileUpdates.index
+GET        /nk                     controllers.NewKittens.index
 
-GET        /aggregate              controllers.Aggregator.index
-
-
-GET        /pv-stream               controllers.ProfileViewsEnum.index
-
-#GET        /new-kittens         controllers.NewKittens.index(embedded: Boolean ?= true)
-#GET        /profile-views       controllers.ProfileViews.index(embedded: Boolean ?= true)
+GET        /dashboard              controllers.Assets.at(path="/public", file="/dashboard/monitor/monitor.html")
+GET        /hystrix.stream         controllers.HystrixMetricsStream.stream(delay: Option[Int])
 
 # Map static resources from the /public folder to the /assets URL path
 GET        /assets/*file           controllers.Assets.at(path="/public", file)

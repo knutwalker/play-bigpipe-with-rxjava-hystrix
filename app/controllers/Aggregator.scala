@@ -1,25 +1,12 @@
 package controllers
 
-import play.api.mvc.{Action, Controller}
-import play.api.libs.concurrent.Execution.Implicits._
-import util.Pagelet
+import play.api.mvc.{AnyContent, Request}
 
 
-object Aggregator extends Controller {
+object Aggregator extends CommandStreamController {
 
-  def index = Action.async { request =>
-    val profileUpdatesFuture = ProfileUpdates.index(embed = true)(request)
-    val profileViewsFuture = ProfileViews.index(embed = true)(request)
+  def pagelets(request: Request[AnyContent]) =
+    ProfileUpdates.pagelets(request) ::: ProfileViews.pagelets(request) ::: NewKittens.pagelets(request)
 
-    for {
-      profileUpdates <- profileUpdatesFuture
-      profileViews <- profileViewsFuture
-
-      profileUpdatesBody <- Pagelet.readBody(profileUpdates)
-      profileViewsBody <- Pagelet.readBody(profileViews)
-    } yield {
-      Ok(views.html.aggregator.aggregator(profileUpdatesBody, profileViewsBody)).withCookies(Pagelet.mergeCookies(profileUpdates, profileViews): _*)
-    }
-  }
-
+  val layout = views.pagelet.aggregated.main
 }

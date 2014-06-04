@@ -1,0 +1,3 @@
+@()
+<script type="text/javascript" src="@routes.Assets.at("lib/headjs/head.load.min.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("scripts/bigpipe.js")"></script>

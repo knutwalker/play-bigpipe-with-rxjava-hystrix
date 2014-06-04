@@ -1,20 +1,15 @@
 package controllers
 
-import play.api.mvc.{Action, Controller}
-import svc.ServiceClient
-import play.api.libs.concurrent.Execution.Implicits._
+import play.api.mvc.{AnyContent, Request}
+import commands._
+import views.html.newKittens._
 
-object NewKittens extends Controller {
+object NewKittens extends CommandStreamController {
 
-  def index(embed: Boolean) = Action.async {
-    val newKittensFuture = ServiceClient.newKittens()
-
-    for {
-      newKitten <- newKittensFuture
-    } yield {
-      if (embed) Ok(views.html.newKittens_so.body(newKitten))
-      else Ok(views.html.newKittens_so.scaffold(newKitten))
-    }
+  def pagelets(request: Request[AnyContent]) = {
+    val newestKitten = command(NewestKittenCommand(), sayHello.apply, "newest-kitten")
+    List(newestKitten)
   }
 
+  val layout = views.pagelet.newKittens.streamed
 }

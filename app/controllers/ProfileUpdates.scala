@@ -1,23 +1,17 @@
 package controllers
 
-import svc.{ServiceClient2, ServiceClient}
-import play.api.mvc.{Cookie, Controller, Action}
-import play.api.libs.concurrent.Execution.Implicits._
-import util.RxPlay
+import play.api.mvc.{AnyContent, Request}
+import commands._
+import views.html.profileUpdates._
 
-object ProfileUpdates extends Controller {
+object ProfileUpdates extends CommandStreamController {
 
-  def index(embed: Boolean) = Action.async {
-    val newCommentsFuture = ServiceClient.newComments()
-    val newLikesFuture = ServiceClient.newLikes()
-
-    val template = if (embed) views.html.profileUpdates.body.apply _ else views.html.profileUpdates.profileUpdates.apply _
-
-    for {
-      newComments <- newCommentsFuture
-      newLikes <- newLikesFuture
-    } yield {
-      Ok(template(newComments, newLikes)).withCookies(Cookie("_pu", "bar"))
-    }
+  def pagelets(request: Request[AnyContent]) = {
+    val moduleCss = resources(css = List("styles/profile-updates.css"))
+    val newComments = command(NewCommentsCommand(), newCommentsCount.apply, "new-comments")
+    val newLikes = command(NewLikesCommand(), newLikesCount.apply, "new-likes")
+    List(moduleCss, newComments, newLikes)
   }
+
+  val layout = views.pagelet.profileUpdates.streamed
 }

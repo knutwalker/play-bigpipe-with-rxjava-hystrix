@@ -1,0 +1,61 @@
+@(body: pagelet.PageletObservable)
+<!doctype html>
+<html lang="en">
+  @views.pagelet.layout.header()
+  <body>
+    <div class="main">
+      <div class="kh-masthead">
+        <div class="container">
+          <nav class="kh-nav">
+            <a class="kh-nav-item active" href="#">Home</a>
+            <a class="kh-nav-item" href="#">New Kitten</a>
+            <a class="kh-nav-item" href="#">Settings</a>
+            <a class="kh-nav-item" href="#">About</a>
+            <a class="kh-nav-item brand pull-right" href="#"><i class="fa fa-twitter"></i></a>
+            <a class="kh-nav-item pull-right" href="#"><i class="fa fa-google-plus"></i></a>
+            <a class="kh-nav-item pull-right" href="#"><i class="fa fa-linkedin"></i></a>
+            <a class="kh-nav-item pull-right" href="#"><i class="fa fa-facebook"></i></a>
+            <a class="kh-nav-item pull-right" href="#"><i class="fa fa-github"></i></a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="container">
+
+        <div class="row">
+
+          <div class="col-sm-7 kh-main">
+
+            <div class="kh-header">
+              <h1 class="kh-title">Kittens Haven</h1>
+              <p class="lead kh-description">Find a place for your kittens or a kitten for your place.</p>
+            </div>
+
+            @views.pagelet.newKittens.body()
+          </div>
+
+          <div class="col-sm-4 col-sm-offset-1 kh-sidebar">
+            <div class="sidebar-module sidebar-module-inset">
+              @views.pagelet.profileViews.body()
+            </div>
+            <div class="sidebar-module sidebar-module-inset">
+              @views.pagelet.profileUpdates.body()
+            </div>
+            <div class="sidebar-module sidebar-module-inset">
+              <h4>About</h4>
+              <p>Lorem ipsum <em>dolor sit</em> amet, consectetur adipiscing elit. Aenean ut sem semper, egestas urna vel, <em>lobortis ipsum</em>. Nulla vestibulum felis.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kh-footer">
+      <p>
+        <a href="#">Back to top</a>
+      </p>
+    </div>
+    @views.pagelet.layout.scripts()
+    @body
+  </body>
+</html>

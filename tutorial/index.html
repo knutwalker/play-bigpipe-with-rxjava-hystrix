@@ -1,0 +1,348 @@
+<html>
+<head>
+    <title>BigPipe using Play and Hystrix</title>
+</head>
+<body>
+<div>
+
+    <h2>BigPipe, Play, and Hystrix</h2>
+
+    <p>
+        This is an implementation of the BigPipe pattern using Play, backed by Hystrix.
+    </p>
+
+    <p>
+        You can navigate this tutorial to see some of the new features using the arrows above, or you can jump
+        to any particular feature at any time by clicking the title of the current part of the tutorial, which will
+        open a drop down.
+    </p>
+
+</div>
+<div>
+
+    <h2>BigPipe / Motivation</h2>
+
+    <p>
+        BigPipe is a technique <a href="https://www.facebook.com/note.php?note_id=389414033919" target="_blank">described by Facebook</a>
+        for speeding up webpage performance, in particular the perceived latency.
+    </p>
+
+    <p>
+        BigPipe was developed to overcome the problems of the existing web page serving systems.
+    </p>
+
+    <p>
+        In the traditional model, the browser send a request to the web server, which parses and processed it.
+        Only when the complete response is available, it sent back to the browser. Now, the browser processes the response,
+        renders the DOM, loads additional resources like CSS and JavaScript files.
+        All operations happen sequentially, which means, that the browser has to wait until the server has finished processing everything.
+    </p>
+
+    <p>
+        This is not what we want in a reactive web page. The server shouldn't have to wait until all HTML snippets are available and the browser shouldn't have to wait for the server.
+    </p>
+
+    <p>
+        With BigPipe, the server's generation time overlaps with the browser's rendering time. The browser receives almost immediately the first bytes and can start rendering the page or downloading the assets and whenever the server pushes some new page content to the browser, it can react accordingly to it.
+    </p>
+
+    <p>
+        To make excellent use of this technique, the web page should consist of several modules that can operate independently of each other.
+        In the traditional model, page rendering would have to wait for all modules to be executed. With BigPipe, the modules can operate asynchronously and push new content to the browser, whenever they have it available.
+    </p>
+
+    <p>
+        This is achieved by using <a href="http://en.wikipedia.org/wiki/Chunked_transfer_encoding" target="_blank">Chunked Transfer Encoding</a>
+      (<a href="http://www.playframework.com/documentation/2.3.x/ScalaStream" target="_blank">Play documentation</a>).
+      This is very simple and is already widely supported. Possible alternatives are found under the umbrella term
+      <a href="http://en.wikipedia.org/wiki/Comet_%28programming%29" target="_blank">Comet</a>.
+    </p>
+
+    <p>
+        This tutorial follows a fancy new social media site, that heavily features kittens to satisfy the need of the internet.
+    </p>
+
+</div>
+
+<div>
+
+    <h2>Kittens Haven</h2>
+
+    <p>
+        <a href="#run" class="shortcut">Run</a> this application and open your browser at <a href="http://localhost:9000/blocking" target="_blank">http://localhost:9000/blocking</a>.
+        You will see a web page with some social media items. You may also notice, that the web page took some time to load.
+    </p>
+
+    <p>
+        There are some modules on this page, two in the sidebar and one in the news stream. The numbers and values of these
+        modules are randomly generated and each module simulates network latency and failures, thus taking an variable amount of time
+        to generate their number, or they might be failing.
+    </p>
+
+    <p>
+        The idea is, that the modules, or rather their individual commands, are provided by some kind of micro-service architecture.
+        Each could be fed by another data source, profile view counts could be supplied by Redis while comments could be delivered by Cassandra.
+        It doesn't really matter where the data comes from, only that the application is no monolithic block but a distributed network of services.
+    </p>
+</div>
+
+<div>
+
+    <h2>Hystrix</h2>
+
+    <p>
+        The modules and their commands are implemented using <a href="https://github.com/netflix/hystrix#readme" target="_blank">Hystrix by Netflix</a>.
+        Hystrix is a fault tolerance library, that provides useful mechanics for isolating each module.
+        It allows you to write simple code in a traditional synchronous manner while providing latency and fault tolerance, concurrent execution, and realtime monitoring for you.
+    </p>
+
+    <p>
+        Browse to <a href="#code/app/commands/commands.scala" class="shortcut">commands.scala</a>.
+        These are all the commands, one for each value of the five parts of all modules.
+        The commands are fairly simple, most of their code actually comes from
+        <a href="#code/app/commands/BogusHelper.scala" class="shortcut">BogusHelper.scala</a>.
+        This is a trait, that <code>Thread.sleep()</code>s and <code>throw</code>s <code>RuntimeException</code>s in order to simulate an unreliable network.
+    </p>
+
+    <p>
+        HystrixCommands can have a fallback to allow for graceful degradation.
+        Whether or not to use a fallback and what it should return is driven by the business logic.
+        For Kittens Haven, every command implements a fallback, which is mostly some static default value.
+        The fallback is triggered for all types af failure, such as <code>run()</code> failure, timeouts, thread pool rejection, or circuit-breaker short-circuiting.
+        The default timeout for any HystrixCommand in one seconds, which is raised for most commands in Kittens Haven, purely for demonstration purposes.
+    </p>
+
+    <p>
+        HystrixCommands can be executed in a synchronous, asynchronous, or reactive manner.
+        Kittens Haven uses the reactive execution, which returns an <code>rx.Observable[T]</code> from
+        <a href="https://github.com/netflix/rxjava#readme" target="_blank">RxJava</a>.
+
+        Browse to <a href="#code/app/pagelet/PageletFactory.scala" class="shortcut">PageletFactory.scala</a> at line 30
+        to see where it is used.
+        The HystrixCommands' <code>observe()</code> method returns an Observable. The view of this single command is mapped over the observable and then it is rendered into a Pagelet. You can read more about Pagelets later.
+    </p>
+
+    <p>
+        RxJava and its Observables fit nicely into the model of composing single modules reactively.
+        Multiple Observables can be <code>merge</code>d together, creating a new Observable that will push each modules' content as soon as it is available.
+        Browse to <a href="#code/app/pagelet/Pagelet.scala" class="shortcut">Pagelet.scala</a> at line 59 to see it in action.
+
+        A caveat of this merging is, that the resulting observable pushes its pagelets out of web page order, so they have to be reordered later via the means of JavaScript.
+    </p>
+
+    <p>
+        Hystrix is not a requirement for BigPipe, neither is RxJava (or Play, really, for that matter). You can also use Akka or any other toolkit, that enables fault and latency tolerant and reactive execution of simple commands.
+    </p>
+</div>
+
+<div>
+
+    <h2>Pagelets</h2>
+
+    <p>
+        A Pagelet is the single unit of processing for the BigPipe technique.
+        It represents a snippet of HTML, together with an ID of the element into which the HTML snippet should be injected.
+    </p>
+
+    <p>
+        As said before, the individual Pagelets are streamed out of order &mdash; they appear in the order they're available in, not in the order they're needed in.
+        To put them in the right place, a <a href="#code/app/assets/scripts/bigpipe.coffee" class="shortcut">little Coffescript snippet</a> takes the HTML and puts it into place.
+    </p>
+
+    <p>
+        Pagelets itself consist of two script tags. One contains the HTML and has a type of <code>text/x-html-stream</code>.
+        If a browser encounters a <code>script</code> tag, they should download and place its content into the DOM. But only tags with the type set to <code>text/javascript</code> should be evaluated. This makes <code>script</code> tags a convenient way to inject HTML or other text into the DOM, so that it is never rendered or visible to the user but available for programmatic use. Several JavaScript based template engines use this technique as well.
+        The other <code>script</code> tag just call the injection snippet, so that the content in injected into the DOM.
+
+        Browse to <a href="#code/app/views/pagelet/pagelet.scala.html" class="shortcut">pagelet.scala.html</a> for the template view.
+    </p>
+
+</div>
+
+<div>
+
+    <h2>Pagelet Modules</h2>
+
+    <p>
+        On the server side, a Pagelet is powered by an <code>Observable[Html]</code> and a regular html template.
+        <a href="#code/app/views/newKittens/sayHello.scala.html" class="shortcut">sayHello.scala.html</a> for example, is the template for the
+        <a href="#code/app/commands/commands.scala" class="shortcut">NewestKittenCommand</a>.
+    </p>
+
+    <p>
+        Several Pagelet can make up a Pageletmodule. Such a module consists of a controller and a layout template.
+        This template is not a regular html template but a streamable template. You can read more about these later on; for now, pretend they're regular templates.
+    </p>
+
+    <p>
+        For example, the NewKittens module consists only of the NewKittens/sayHello Pagelet. Its layout template is at
+        <a href="#code/app/views/newKittens/body.scala.pagelet" class="shortcut">body.scala.pagelet</a>.
+        There is a placeholder, the <code>div#newest-kitten</code>. This is the place where the content of the Pagelet will be injected into.
+    </p>
+
+    <p>
+        Browse to <a href="#code/app/controllers/NewKittens.scala" class="shortcut">NewKittens.scala</a> for the module controller.
+        Most of the implementation is provided by the
+        <a href="#code/app/controllers/CommandStreamController.scala" class="shortcut">CommandStreamController</a> trait, so that modules are really just a definition of the above &mdash; a list of Pagelets, each consisting of:
+    </p>
+
+    <ul>
+        <li>A command (<code>NewestKittenCommand()</code>)</li>
+        <li>A view (<code>sayHello.apply</code>)</li>
+        <li>An ID of the DOM element (<code>"newest-kitten"</code>)</li>
+    </ul>
+
+    <p>
+        The <code>CommandStreamController</code> trait defines some helper methods to create Pagelet factories out of commands or required resources.
+        It also implements the Play action by merging the modules' Observables together and transform them into an Enumerator.
+    </p>
+
+    <p>
+        Plays Enumerators ans RxJavas Observables are very similar in what they're achieving to solve.
+        Both provide a push based alternative to enumerate several values asynchronously, instead of the synchronous, pull-base iteration with Iterators.
+        Here, Observables were used, because that's what was already provided by Hystrix and they offer all composing functionality that is needed.
+        Alternatively, one could use Enumerators from the beginning and have them composed as well (e.g. <code>Enumerator.interleave</code> instead of <code>Observable.merge</code> and <code>Enumerator.andThen</code> instead of <code>Observable.concat</code>).
+    </p>
+
+    <p>
+        A <a href="#code/app/pagelet/PageletFactory.scala" class="shortcut">PageletFactory</a> is just a function that produces a Pagelet with an additional method to do so in a traditional, blocking manner.
+        This blocking is only used for demonstration purpose, it is not needed for BigPipe and this abstraction can be removed in production code.
+    </p>
+
+    <p>
+        Controllers define one additional thing, the <code>layout</code>.
+        This it the streaming template that is used, when the module is viewed as a standalone page.
+        By providing this, you can easily text and develop the modules independent from each other, without having to keep the big picture around all the time.
+    </p>
+
+</div>
+
+<div>
+
+    <h2>Streamable Templates</h2>
+
+    <p>
+        In order to stream the Pagelets to the browser, the templates have to be made asynchronous as well.
+        The default html templates are rendered into an <code>Html</code>, that is finally sent to the browser.
+        What is needed, are templates, that would instead render into an <code>Observable[Html]</code>, so that we can still use the view separation with BigPipe.
+    </p>
+
+    <p>
+        Browse to <a href="#code/build.sbt" class="shortcut">build.sbt</a>. You'll see a configuration option called <code>TwirlKeys.templateFormats</code>.
+    </p>
+
+    <pre><code>TwirlKeys.templateFormats += ("pagelet" -> "pagelet.PageletObservableFormat")</code></pre>
+
+    <p>
+        This defines a <a href="http://www.playframework.com/documentation/2.3.x/ScalaCustomTemplateFormat" target="_blank">custom template format</a> and registers it to the file ending <code>.pagelet</code>.
+        You already encountered such a template, it doesn't look different from a regular template.
+    </p>
+
+    <p>
+        Browse to <a href="#code/app/pagelet/PageletObservableFormat.scala" class="shortcut">PageletObservableFormat</a>. This is the Format definition for the streamable templates. It mirrors the HtmlFormat but works with parts of <code>PageletObservable</code>s instead of <code>Html</code>.
+    </p>
+
+    <p>
+        Browse to <a href="#code/app/pagelet/PageletObservable.scala" class="shortcut">PageletObservable</a>. This is the Appendable definition for the streamable templates. Instead of appending text to some StringBuffer, it concatenates Observables into one single Observables.
+        The usage of <code>++</code> (or <code>concat</code>) is important here, since templates are order sensitive &mdash; you don't want to have your HTML layout scattered all over the place. The <code>++</code> operator ensures, that each part of the template appears in the order it is defined. Note, that this is different from the Pagelets itself, which are encouraged to appear out of order.
+    </p>
+
+    <p>
+        Browse to <a href="#code/app/views/newKittens/streamed.scala.pagelet" class="shortcut">streamed.scala.pagelet</a> for an example of a module page.
+        Here, <code>body</code> are the modules' Pagelets. Everything that appears before <code>@body</code> will be sent to the browser immediately. The body itself will be streamed as the Pagelets arrive and finally, the transfer is finished with closing the <code>body</code> and <code>html</code> tags.
+        Therefore, <code>@body</code> should always appear at the very last position, right before the closing <code>&lt;/body></code>, so that as much as possible is sent to the browser immediately. Or to put otherwise &mdash; <code>@body</code> is the part that would normally block, but doesn't, thanks to BigPipe.
+    </p>
+
+</div>
+
+<div>
+
+    <h2>Put it together</h2>
+
+    <p>
+        Now, all pieces are laid out to implement BigPipe.
+    </p>
+
+    <ol>
+        <li>The data is provided asynchronously by a HystrixCommand (or, could be a web/micro service) <code> => Observable[T]</code></li>
+        <li>A Pagelets view template is mapped over this <code>Observable[T] => Observable[Html]</code></li>
+        <li>This result is wrapped in the Pagelet template <code> => Observable[Pagelet]</code></li>
+        <li>Each modules Pagelets are <code>merge</code>d together and turned into a <code> => PageletObservable</code></li>
+        <li>The layout of the Pagelet module is rendered with the previous <code>PageletObservable</code> as its body, providing the outline of the module <code> => PageletObservable</code></li>
+        <li>The resulting <code>PageletObservable</code> is transformed into an <code> => Enumerator[Html]</code></li>
+        <li>This <code>Enumerator[Html]</code> is streamed to the browser, using Plays <code>Ok.chunked()</code> <code> => Action</code></li>
+    </ol>
+
+    <p>
+        The main page is implemented by the <a href="#code/app/controllers/Aggregator.scala" class="shortcut">Aggregator.scala</a>, which is really simple.
+        It just concatenates all Pageletes from all modules and defines the global template.
+    </p>
+
+    <p>
+        Open the browser at <a href="http://localhost:9000/" target="_blank">http://localhost:9000/</a>.
+        and compare it with the traditional blocking version of <a href="http://localhost:9000/blocking" target="_blank">http://localhost:9000/blocking</a>.
+        You will notice, that the layout of the page appears almost immediately and you can see, how some numbers suddenly pop into place, that would have otherwise staled the HTML generation on the server side.
+        You can see the result as well in the network section of your browsers developer tools. E.g.:
+    </p>
+
+    <img src="tutorial/blocking.png" alt="blocking" width="960" height="164" />
+
+    <p>
+        vs.
+    </p>
+
+    <img src="tutorial/streaming.png" alt="streaming" width="960" height="164" />
+
+    <p>
+        With the traditional model, the browser had to wait several seconds before it could do anything at all.
+        With BigPipe, the first bytes were received after only 6 milliseconds, and the browser could download additional resources while the server was still busy, generating the Pagelets.
+    </p>
+
+    <p>
+        Also, if you refresh the page several times, you can see the fallback strategy being applied. Every time, there is a 0 count of something, the underlying service failed. But this failure did not in any way affect the overall page, only its own segment. This outage might have been due to a tripped circuit, a timeout, an exception or other things, but Hystrix allows the page to survive this fairly easily and the error does not propagate the complete system.
+    </p>
+
+</div>
+
+<div>
+
+    <h2>Monitoring Dashboard</h2>
+
+    <p>
+        Another aspect of Hystrix is the <a href="https://github.com/Netflix/Hystrix/wiki/Dashboard" target="_blank">Dashboard</a>.
+        The default distribution of the Dashboard and its companion &ndash; the <a href="https://github.com/Netflix/Hystrix/tree/master/hystrix-contrib/hystrix-metrics-event-stream#readme">Metrics Event Stream</a> &ndash; is via Servlets/JEE.
+        This is not suitable for Play, so this tutorial has them both integrated into this Play app.
+    </p>
+
+    <p>
+        <a href="#code/app/controllers/HystrixMetricsStream.scala" class="shortcut">HystrixMetricsStream.scala</a> is a Play implementation of the <code>hystrix-metrics-event-stream</code> module. It is fully compliant with the default implementation, so you can use this stream to push Hystrix metrics to your own dashboard or <a href="https://github.com/Netflix/Turbine#readme" target="_blank">Turbine</a>.
+    </p>
+
+    <p>
+        <a href="http://localhost:9000/dashboard" target="_blank">http://localhost:9000/dashboard</a> is an integrated/hosted version of the dashboard, providing useful insights into your commands.
+    </p>
+
+    <img src="tutorial/dashboard.png" alt="dashboard" width="960" height="597" />
+
+</div>
+
+<div>
+
+    <h2>Next steps</h2>
+
+    <p>
+        Here are some suggestions or improvements that could be made.
+    </p>
+
+    <ul>
+        <li>Since Hystrix 1.4, there exists an <code>HystrixObservableCommand</code>, so that one can implement the commands completely asynchronous and non-blocking as well.</li>
+        <li>Also, Hystrix does offer a great palette of interesting features like bulked or cached commands</li>
+        <li>Alternatively, replace Hystrix and RxJava with e.g. Akka</li>
+        <li>Sessions with Cookies were ignored for now. Cookies are already provided by the request, but one has to export custom module headers so that Pagelets can define their own Cookies.</li>
+        <li>Some JavaScript magic, that would have modules appear smoothly instead of them just popping in. This is entirely up to the Frontend department and does not require changes to BigPipe.</li>
+    </ul>
+
+</div>
+
+</body>
+</html>

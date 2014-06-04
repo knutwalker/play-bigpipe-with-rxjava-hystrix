@@ -1,0 +1,6 @@
+@()
+<div class="kh-post" id="profile-views-module">
+  <h3 class="kh-post-title">Your Profile Views</h3>
+  <div id="profile-views"></div>
+  <div id="kittens-views"></div>
+</div>

@@ -1,0 +1,5 @@
+@()
+<div class="kh-post">
+  <h2 class="kh-post-title">Say hello to our latest kitten</h2>
+  <div id="newest-kitten"></div>
+</div>

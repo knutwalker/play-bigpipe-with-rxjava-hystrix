@@ -1,9 +1,0 @@
-@(content: Html, id: String)
-
-<script type="text/x-html-stream" id="x-stream-@id">
-  @content
-</script>
-
-<script type="text/javascript">
-  document.getElementById("@id").innerHTML = document.getElementById("x-stream-@id").innerHTML;
-</script>
