@@ -1,4 +1,4 @@
-name := "scala-days-14-challenge"
+name := "play-bigpipe-with-rxjava-hystrix"
 
 version := "1.0"
 
