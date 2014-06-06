@@ -32,23 +32,23 @@
     </p>
 
     <p>
-        In the traditional model, the browser send a request to the web server, which parses and processed it.
-        Only when the complete response is available, it sent back to the browser. Now, the browser processes the response,
-        renders the DOM, loads additional resources like CSS and JavaScript files.
-        All operations happen sequentially, which means, that the browser has to wait until the server has finished processing everything.
+        In the traditional model, the browser sends a request to the web server, which parses and processes it.
+        Only when the complete response is available, it will be sent back to the browser. Now, the browser can processes the response,
+        render the DOM and load additional resources like CSS and JavaScript files.
+        All operations are performed sequentially, which means that the browser has to wait until the server has finished processing everything.
     </p>
 
     <p>
-        This is not what we want in a reactive web page. The server shouldn't have to wait until all HTML snippets are available and the browser shouldn't have to wait for the server.
+        This is not what we want in a reactive web application. People expect web applications to react instantly. The server shouldn't have to wait until all HTML snippets are available and the browser shouldn't have to wait for the server.
     </p>
 
     <p>
-        With BigPipe, the server's generation time overlaps with the browser's rendering time. The browser receives almost immediately the first bytes and can start rendering the page or downloading the assets and whenever the server pushes some new page content to the browser, it can react accordingly to it.
+        With BigPipe, the server's generation time overlaps with the browser's rendering time. The browser receives almost immediately the first bytes and can start rendering the page and download the assets. Whenever the server pushes some new page content to the browser, it can react accordingly to it.
     </p>
 
     <p>
         To make excellent use of this technique, the web page should consist of several modules that can operate independently of each other.
-        In the traditional model, page rendering would have to wait for all modules to be executed. With BigPipe, the modules can operate asynchronously and push new content to the browser, whenever they have it available.
+        In the traditional model, pages have to wait till all modules are loaded completly. With BigPipe, the modules can operate asynchronously and push new content to the browser whenever they have it available.
     </p>
 
     <p>
@@ -59,7 +59,7 @@
     </p>
 
     <p>
-        This tutorial follows a fancy new social media site, that heavily features kittens to satisfy the need of the internet.
+        This tutorial represents a fancy new social media site, that heavily features kittens to satisfy the need of the internet.
     </p>
 
 </div>
@@ -75,14 +75,14 @@
 
     <p>
         There are some modules on this page, two in the sidebar and one in the news stream. The numbers and values of these
-        modules are randomly generated and each module simulates network latency and failures, thus taking an variable amount of time
+        modules are randomly generated and each module simulates network latency and failures, thus taking a variable amount of time
         to generate their number, or they might be failing.
     </p>
 
     <p>
         The idea is, that the modules, or rather their individual commands, are provided by some kind of micro-service architecture.
-        Each could be fed by another data source, profile view counts could be supplied by Redis while comments could be delivered by Cassandra.
-        It doesn't really matter where the data comes from, only that the application is no monolithic block but a distributed network of services.
+        Each one could be fed by a different data source, profile view counts could be supplied by Redis, while comments could be delivered by Cassandra.
+        It doesn't really matter where the data comes from, only that the application is not a monolithic block but a distributed network of services.
     </p>
 </div>
 
@@ -107,9 +107,9 @@
     <p>
         HystrixCommands can have a fallback to allow for graceful degradation.
         Whether or not to use a fallback and what it should return is driven by the business logic.
-        For Kittens Haven, every command implements a fallback, which is mostly some static default value.
-        The fallback is triggered for all types af failure, such as <code>run()</code> failure, timeouts, thread pool rejection, or circuit-breaker short-circuiting.
-        The default timeout for any HystrixCommand in one seconds, which is raised for most commands in Kittens Haven, purely for demonstration purposes.
+        Every command in <i>Kittens Haven</i> implements a fallback, which is mostly some static default value.
+        The fallback is triggered for all types af failure, such as <code>run()</code> failure, timeouts, thread pool rejection, or <a href="https://github.com/Netflix/Hystrix/wiki/How-it-Works#CircuitBreaker"  target="_blank">circuit-breaker</a> short-circuiting.
+        The default timeout for any HystrixCommand in one seconds, which is raised for most commands in Kittens Haven, purely for demonstration purpose.
     </p>
 
     <p>
@@ -119,19 +119,19 @@
 
         Browse to <a href="#code/app/pagelet/PageletFactory.scala" class="shortcut">PageletFactory.scala</a> at line 30
         to see where it is used.
-        The HystrixCommands' <code>observe()</code> method returns an Observable. The view of this single command is mapped over the observable and then it is rendered into a Pagelet. You can read more about Pagelets later.
+        The HystrixCommands' <code>observe()</code> method returns an Observable. The view of this single command is mapped over the observable and then rendered into a Pagelet. You can read more about Pagelets later.
     </p>
 
     <p>
         RxJava and its Observables fit nicely into the model of composing single modules reactively.
-        Multiple Observables can be <code>merge</code>d together, creating a new Observable that will push each modules' content as soon as it is available.
+        Multiple Observables can be <code>merge</code>d together, creating a new Observable that will push the modules' content as soon as it is available.
         Browse to <a href="#code/app/pagelet/Pagelet.scala" class="shortcut">Pagelet.scala</a> at line 59 to see it in action.
 
         A caveat of this merging is, that the resulting observable pushes its pagelets out of web page order, so they have to be reordered later via the means of JavaScript.
     </p>
 
     <p>
-        Hystrix is not a requirement for BigPipe, neither is RxJava (or Play, really, for that matter). You can also use Akka or any other toolkit, that enables fault and latency tolerant and reactive execution of simple commands.
+        Hystrix is not a requirement for BigPipe, neither is RxJava (or Play, really, for that matter). You can also use Akka or any other toolkit, that enables fault and latency tolerance and reactive execution of simple commands.
     </p>
 </div>
 
@@ -151,8 +151,8 @@
 
     <p>
         Pagelets itself consist of two script tags. One contains the HTML and has a type of <code>text/x-html-stream</code>.
-        If a browser encounters a <code>script</code> tag, they should download and place its content into the DOM. But only tags with the type set to <code>text/javascript</code> should be evaluated. This makes <code>script</code> tags a convenient way to inject HTML or other text into the DOM, so that it is never rendered or visible to the user but available for programmatic use. Several JavaScript based template engines use this technique as well.
-        The other <code>script</code> tag just call the injection snippet, so that the content in injected into the DOM.
+        If a browser encounters a <code>script</code> tag, they should download it and insert its content in the DOM. Despite that, only tags with the type set to <code>text/javascript</code> should be evaluated. This makes <code>script</code> tags a convenient way to inject HTML or other text`s into the DOM, so that it is never rendered or visible to the user but available for programmatic use. Several JavaScript based template engines use this technique as well.
+        The other <code>script</code> tag just calls the injection snippet, so that the content is injected in the DOM.
 
         Browse to <a href="#code/app/views/pagelet/pagelet.scala.html" class="shortcut">pagelet.scala.html</a> for the template view.
     </p>
@@ -164,20 +164,20 @@
     <h2>Pagelet Modules</h2>
 
     <p>
-        On the server side, a Pagelet is powered by an <code>Observable[Html]</code> and a regular html template.
+        On the server side, a Pagelet is powered by an <code>Observable[Html]</code> and a regular HTML template.
         <a href="#code/app/views/newKittens/sayHello.scala.html" class="shortcut">sayHello.scala.html</a> for example, is the template for the
         <a href="#code/app/commands/commands.scala" class="shortcut">NewestKittenCommand</a>.
     </p>
 
     <p>
-        Several Pagelet can make up a Pageletmodule. Such a module consists of a controller and a layout template.
-        This template is not a regular html template but a streamable template. You can read more about these later on; for now, pretend they're regular templates.
+        Several Pagelet`s can make up a Pageletmodule. Such a module consists of a controller and a layout template.
+        This template is not a regular HTML template but a streamable template. You can read more about these later on; for now, assume they're regular templates.
     </p>
 
     <p>
-        For example, the NewKittens module consists only of the NewKittens/sayHello Pagelet. Its layout template is at
+        For example, the NewKittens module consists only of the NewKittens/sayHello Pagelet. It`s layout template is at
         <a href="#code/app/views/newKittens/body.scala.pagelet" class="shortcut">body.scala.pagelet</a>.
-        There is a placeholder, the <code>div#newest-kitten</code>. This is the place where the content of the Pagelet will be injected into.
+        There is a placeholder, the <code>div#newest-kitten</code>. This is where the content of the Pagelet will be injected.
     </p>
 
     <p>
@@ -199,14 +199,14 @@
 
     <p>
         Plays Enumerators ans RxJavas Observables are very similar in what they're achieving to solve.
-        Both provide a push based alternative to enumerate several values asynchronously, instead of the synchronous, pull-base iteration with Iterators.
+        Both provide a push based alternative to enumerate several values asynchronously, instead of the synchronous, pull-based iteration with Iterators.
         Here, Observables were used, because that's what was already provided by Hystrix and they offer all composing functionality that is needed.
-        Alternatively, one could use Enumerators from the beginning and have them composed as well (e.g. <code>Enumerator.interleave</code> instead of <code>Observable.merge</code> and <code>Enumerator.andThen</code> instead of <code>Observable.concat</code>).
+        Alternatively, one could use Enumerators from the beginning and have them composed as (e.g. <code>Enumerator.interleave</code> instead of <code>Observable.merge</code> and <code>Enumerator.andThen</code> instead of <code>Observable.concat</code>).
     </p>
 
     <p>
         A <a href="#code/app/pagelet/PageletFactory.scala" class="shortcut">PageletFactory</a> is just a function that produces a Pagelet with an additional method to do so in a traditional, blocking manner.
-        This blocking is only used for demonstration purpose, it is not needed for BigPipe and this abstraction can be removed in production code.
+        This blocking behaviour is only used for demonstration purpose, it is not needed for BigPipe and this abstraction can be removed in production code.
     </p>
 
     <p>
@@ -223,8 +223,8 @@
 
     <p>
         In order to stream the Pagelets to the browser, the templates have to be made asynchronous as well.
-        The default html templates are rendered into an <code>Html</code>, that is finally sent to the browser.
-        What is needed, are templates, that would instead render into an <code>Observable[Html]</code>, so that we can still use the view separation with BigPipe.
+        The default HTML templates are rendered into an <code>Html</code>, that is finally sent to the browser.
+        What is needed are templates, that would instead render into an <code>Observable[Html]</code>, so that we can still use the view separation with BigPipe.
     </p>
 
     <p>
@@ -234,8 +234,8 @@
     <pre><code>TwirlKeys.templateFormats += ("pagelet" -> "pagelet.PageletObservableFormat")</code></pre>
 
     <p>
-        This defines a <a href="http://www.playframework.com/documentation/2.3.x/ScalaCustomTemplateFormat" target="_blank">custom template format</a> and registers it to the file ending <code>.pagelet</code>.
-        You already encountered such a template, it doesn't look different from a regular template.
+        This defines a <a href="http://www.playframework.com/documentation/2.3.x/ScalaCustomTemplateFormat" target="_blank">custom template format</a> and registers itself to the file ending with <code>.pagelet</code>.
+        You have already encountered such a template, it doesn't look different from a regular template.
     </p>
 
     <p>
@@ -243,14 +243,14 @@
     </p>
 
     <p>
-        Browse to <a href="#code/app/pagelet/PageletObservable.scala" class="shortcut">PageletObservable</a>. This is the Appendable definition for the streamable templates. Instead of appending text to some StringBuffer, it concatenates Observables into one single Observables.
+        Browse to <a href="#code/app/pagelet/PageletObservable.scala" class="shortcut">PageletObservable</a>. This is the Appendable definition for the streamable templates. Instead of appending text to some StringBuffer, it concatenates Observables into one single Observable.
         The usage of <code>++</code> (or <code>concat</code>) is important here, since templates are order sensitive &mdash; you don't want to have your HTML layout scattered all over the place. The <code>++</code> operator ensures, that each part of the template appears in the order it is defined. Note, that this is different from the Pagelets itself, which are encouraged to appear out of order.
     </p>
 
     <p>
         Browse to <a href="#code/app/views/newKittens/streamed.scala.pagelet" class="shortcut">streamed.scala.pagelet</a> for an example of a module page.
         Here, <code>body</code> are the modules' Pagelets. Everything that appears before <code>@body</code> will be sent to the browser immediately. The body itself will be streamed as the Pagelets arrive and finally, the transfer is finished with closing the <code>body</code> and <code>html</code> tags.
-        Therefore, <code>@body</code> should always appear at the very last position, right before the closing <code>&lt;/body></code>, so that as much as possible is sent to the browser immediately. Or to put otherwise &mdash; <code>@body</code> is the part that would normally block, but doesn't, thanks to BigPipe.
+        Therefore, <code>@body</code> should always appear at the very last position, right before the closing <code>&lt;/body></code>, so that as much as possible is sent to the browser immediately. In other words &mdash; <code>@body</code> is the part that would normally block, but doesn't, thanks to BigPipe.
     </p>
 
 </div>
@@ -281,8 +281,8 @@
     <p>
         Open the browser at <a href="http://localhost:9000/" target="_blank">http://localhost:9000/</a>.
         and compare it with the traditional blocking version of <a href="http://localhost:9000/blocking" target="_blank">http://localhost:9000/blocking</a>.
-        You will notice, that the layout of the page appears almost immediately and you can see, how some numbers suddenly pop into place, that would have otherwise staled the HTML generation on the server side.
-        You can see the result as well in the network section of your browsers developer tools. E.g.:
+        You will notice, that the layout of the page appears almost immediately and you can see how some numbers suddenly pop into place, that would have otherwise staled the HTML generation on the server side.
+        Additionally, you can see the result in the network section of your browsers developer tools. E.g.:
     </p>
 
     <img src="tutorial/blocking.png" alt="blocking" width="960" height="164" />
@@ -294,12 +294,12 @@
     <img src="tutorial/streaming.png" alt="streaming" width="960" height="164" />
 
     <p>
-        With the traditional model, the browser had to wait several seconds before it could do anything at all.
+        With the traditional model, the browser had to wait several seconds before it could do anything.
         With BigPipe, the first bytes were received after only 6 milliseconds, and the browser could download additional resources while the server was still busy, generating the Pagelets.
     </p>
 
     <p>
-        Also, if you refresh the page several times, you can see the fallback strategy being applied. Every time, there is a 0 count of something, the underlying service failed. But this failure did not in any way affect the overall page, only its own segment. This outage might have been due to a tripped circuit, a timeout, an exception or other things, but Hystrix allows the page to survive this fairly easily and the error does not propagate the complete system.
+        Also, if you refresh the page several times, you can see the fallback strategy being applied. Every time, there is a 0 count of something, the underlying service failed. But this failure did not affect the overall page in any way, only its own segment. This outage might have been due to a tripped circuit, a timeout, an exception or other things, but Hystrix allows the page to survive this fairly easily and the error does not propagate the complete system.
     </p>
 
 </div>
