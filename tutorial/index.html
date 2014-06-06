@@ -33,13 +33,13 @@
 
     <p>
         In the traditional model, the browser sends a request to the web server, which parses and processes it.
-        Only when the complete response is available, it will be sent back to the browser. Now, the browser can processes the response,
+        Only when the complete response is available, it will be sent back to the browser. Now, the browser can process the response,
         render the DOM and load additional resources like CSS and JavaScript files.
         All operations are performed sequentially, which means that the browser has to wait until the server has finished processing everything.
     </p>
 
     <p>
-        This is not what we want in a reactive web application. People expect web applications to react instantly. The server shouldn't have to wait until all HTML snippets are available and the browser shouldn't have to wait for the server.
+        This is not what we want in a reactive web application. People expect web applications to react immediately. The server shouldn't have to wait until all HTML snippets are available and the browser shouldn't have to wait for the server.
     </p>
 
     <p>
@@ -151,7 +151,7 @@
 
     <p>
         Pagelets itself consist of two script tags. One contains the HTML and has a type of <code>text/x-html-stream</code>.
-        If a browser encounters a <code>script</code> tag, they should download it and insert its content in the DOM. Despite that, only tags with the type set to <code>text/javascript</code> should be evaluated. This makes <code>script</code> tags a convenient way to inject HTML or other text`s into the DOM, so that it is never rendered or visible to the user but available for programmatic use. Several JavaScript based template engines use this technique as well.
+        If a browser encounters a <code>script</code> tag, they should download it and insert its content in the DOM. Despite that, only tags with the type set to <code>text/javascript</code> should be evaluated. This makes <code>script</code> tags a convenient way to inject HTML or other texts into the DOM, so that it is never rendered or visible to the user but available for programmatic use. Several JavaScript based template engines use this technique as well.
         The other <code>script</code> tag just calls the injection snippet, so that the content is injected in the DOM.
 
         Browse to <a href="#code/app/views/pagelet/pagelet.scala.html" class="shortcut">pagelet.scala.html</a> for the template view.
@@ -170,12 +170,12 @@
     </p>
 
     <p>
-        Several Pagelet`s can make up a Pageletmodule. Such a module consists of a controller and a layout template.
+        Several Pagelets can make up a Pageletmodule. Such a module consists of a controller and a layout template.
         This template is not a regular HTML template but a streamable template. You can read more about these later on; for now, assume they're regular templates.
     </p>
 
     <p>
-        For example, the NewKittens module consists only of the NewKittens/sayHello Pagelet. It`s layout template is at
+        For example, the NewKittens module consists only of the NewKittens/sayHello Pagelet. Its layout template is at
         <a href="#code/app/views/newKittens/body.scala.pagelet" class="shortcut">body.scala.pagelet</a>.
         There is a placeholder, the <code>div#newest-kitten</code>. This is where the content of the Pagelet will be injected.
     </p>
@@ -201,7 +201,7 @@
         Plays Enumerators ans RxJavas Observables are very similar in what they're achieving to solve.
         Both provide a push based alternative to enumerate several values asynchronously, instead of the synchronous, pull-based iteration with Iterators.
         Here, Observables were used, because that's what was already provided by Hystrix and they offer all composing functionality that is needed.
-        Alternatively, one could use Enumerators from the beginning and have them composed as (e.g. <code>Enumerator.interleave</code> instead of <code>Observable.merge</code> and <code>Enumerator.andThen</code> instead of <code>Observable.concat</code>).
+        Alternatively, one could use Enumerators from the beginning and have them composed (e.g. <code>Enumerator.interleave</code> instead of <code>Observable.merge</code> and <code>Enumerator.andThen</code> instead of <code>Observable.concat</code>).
     </p>
 
     <p>
@@ -234,7 +234,7 @@
     <pre><code>TwirlKeys.templateFormats += ("pagelet" -> "pagelet.PageletObservableFormat")</code></pre>
 
     <p>
-        This defines a <a href="http://www.playframework.com/documentation/2.3.x/ScalaCustomTemplateFormat" target="_blank">custom template format</a> and registers itself to the file ending with <code>.pagelet</code>.
+        This defines a <a href="http://www.playframework.com/documentation/2.3.x/ScalaCustomTemplateFormat" target="_blank">custom template format</a> and registers the file ending <code>.pagelet</code> for it.
         You have already encountered such a template, it doesn't look different from a regular template.
     </p>
 
@@ -282,7 +282,7 @@
         Open the browser at <a href="http://localhost:9000/" target="_blank">http://localhost:9000/</a>.
         and compare it with the traditional blocking version of <a href="http://localhost:9000/blocking" target="_blank">http://localhost:9000/blocking</a>.
         You will notice, that the layout of the page appears almost immediately and you can see how some numbers suddenly pop into place, that would have otherwise staled the HTML generation on the server side.
-        Additionally, you can see the result in the network section of your browsers developer tools. E.g.:
+        Additionally, you can see the result in the network section of your browsers developer tools, e.g.:
     </p>
 
     <img src="tutorial/blocking.png" alt="blocking" width="960" height="164" />
