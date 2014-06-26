@@ -7,7 +7,7 @@ trait BogusHelper {
   protected final val rand = new Random()
 
   /** sleeps for about `millis` milliseconds */
-  def sleep(millis: Int) = try {
+  def sleep(millis: Int): Unit = try {
     Thread.sleep(millis)
   } catch {
     case e: InterruptedException => // do nothing
@@ -23,11 +23,11 @@ trait BogusHelper {
   def chance(percent: Int): Boolean = rand.nextInt(100) < percent
 
   /** simulates network latency by sleeping between `min` and `max` milliseconds */
-  def simulateNetworkLatency(min: Int, max: Int) = sleep(between(min, max))
+  def simulateNetworkLatency(min: Int, max: Int): Unit = sleep(between(min, max))
 
   /** simulates failure under load by throwing an exception at a change of `rate` * 100 % or 1/`rate` */
-  def simulateFailUnderLoad(rate: Double) = if (chance(rate)) throw new RuntimeException("random failure under heavy network load")
+  def simulateFailUnderLoad(rate: Double): Unit = if (chance(rate)) throw new RuntimeException("random failure under heavy network load")
 
   /** simulates network spikes by sleeping betwwen `min` and `max` milliseconds at a change of `percent` %. */
-  def simulateNetworkSpike(rate: Int, min: Int, max: Int) = if (chance(rate)) sleep(between(min, max))
+  def simulateNetworkSpike(rate: Int, min: Int, max: Int): Unit = if (chance(rate)) sleep(between(min, max))
 }

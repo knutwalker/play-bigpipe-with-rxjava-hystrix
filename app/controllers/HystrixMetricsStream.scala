@@ -102,7 +102,7 @@ object HystrixMetricsStream extends Controller {
       oldValue
     }
 
-    def handleJsonMetric(json: String) {
+    def handleJsonMetric(json: String): Unit = {
       val oldMetrics = metrics.get()
       if (oldMetrics.size >= capacity) throw new IllegalStateException("Queue full")
 
