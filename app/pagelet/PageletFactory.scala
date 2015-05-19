@@ -42,7 +42,7 @@ case class CommandPagelet[T](command: HystrixCommand[T], view: T => Html, id: St
 case class ResourcePagelet(js: List[String] = Nil, css: List[String] = Nil) extends PageletFactory {
 
   def apply(): Observable[Pagelet] = {
-    Observable.items(blocking())
+    Observable.just(blocking())
   }
 
   def blocking(): Pagelet = {

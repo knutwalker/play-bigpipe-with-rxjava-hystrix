@@ -35,7 +35,7 @@ trait CommandStreamController extends Controller {
   /** renders the standalone module, but blocks before sending data as if it were a traditional serving model */
   def blocking = Action { request =>
     val snippets = pagelets(request).map(_.blocking())
-    val observable = Observable.items(snippets: _*)
+    val observable = Observable.just(snippets: _*)
     val enumerated = Pagelet.enumerate(observable)(layout.render)
     Ok.chunked(enumerated)
   }

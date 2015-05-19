@@ -18,6 +18,6 @@ object PageletObservable {
   val empty = PageletObservable(Observable.empty: Observable[Pagelet])
   def apply(text: String): PageletObservable = apply(Html(text))
   def apply(html: Html): PageletObservable = apply(Pagelet(html))
-  def apply(pagelet: Pagelet): PageletObservable = apply(Observable.items(pagelet))
+  def apply(pagelet: Pagelet): PageletObservable = apply(Observable.just(pagelet))
   def apply(elements: Seq[PageletObservable]): PageletObservable = elements.fold(empty)(_ += _)
 }
