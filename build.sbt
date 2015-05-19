@@ -4,7 +4,7 @@ version := "1.0"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.6"
 
 libraryDependencies ++= Seq(
   "com.netflix.hystrix"  % "hystrix-core"   % "1.4.0-RC4",
