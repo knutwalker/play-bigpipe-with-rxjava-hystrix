@@ -4,14 +4,14 @@ version := "1.0"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.6"
 
 libraryDependencies ++= Seq(
   "com.netflix.hystrix"  % "hystrix-core"   % "1.4.0-RC4",
   "com.netflix.hystrix"  % "hystrix-metrics-event-stream"  % "1.4.0-RC4",
-  "com.netflix.rxjava"   % "rxjava-scala"   % "0.18.2",
-  "org.webjars" % "bootstrap" % "3.1.1",
-  "org.webjars" % "font-awesome" % "4.1.0",
+  "com.netflix.rxjava"   % "rxjava-scala"   % "0.20.7",
+  "org.webjars" % "bootstrap" % "3.3.4",
+  "org.webjars" % "font-awesome" % "4.3.0-2",
   "org.webjars" % "headjs" % "1.0.3"
 )
 
