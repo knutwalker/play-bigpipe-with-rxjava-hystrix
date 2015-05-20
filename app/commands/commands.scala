@@ -7,7 +7,7 @@ import com.netflix.hystrix.{HystrixCommandKey, HystrixCommandProperties, Hystrix
 object NewestKittenCommand {
   private final val key = Setter
     .withGroupKey(HystrixCommandGroupKey.Factory.asKey("NewestKitten"))
-    .andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withExecutionIsolationThreadTimeoutInMilliseconds(2000))
+    .andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000))
 
   private final val kittenNames = List(
     "Bernd", "Julie", "Tommy", "Ralphe", "Kayleigh", "Blaise"
@@ -34,7 +34,7 @@ object ProfileViewsCommand {
   private final val key = Setter
     .withGroupKey(HystrixCommandGroupKey.Factory.asKey("ProfileViews"))
     .andCommandKey(HystrixCommandKey.Factory.asKey("ProfileViews"))
-    .andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withExecutionIsolationThreadTimeoutInMilliseconds(2000))
+    .andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(2000))
 
   def apply() = new ProfileViewsCommand
 }
@@ -56,7 +56,7 @@ object KittensViewsCommand {
   private final val key = Setter
     .withGroupKey(HystrixCommandGroupKey.Factory.asKey("ProfileViews"))
     .andCommandKey(HystrixCommandKey.Factory.asKey("KittensViews"))
-    .andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withExecutionIsolationThreadTimeoutInMilliseconds(1500))
+    .andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(1500))
 
   def apply() = new KittensViewsCommand
 }
@@ -78,7 +78,7 @@ object NewCommentsCommand {
   private final val key = Setter
     .withGroupKey(HystrixCommandGroupKey.Factory.asKey("ProfileUpdates"))
     .andCommandKey(HystrixCommandKey.Factory.asKey("NewComments"))
-    .andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withExecutionIsolationThreadTimeoutInMilliseconds(1500))
+    .andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withExecutionTimeoutInMilliseconds(1500))
 
   def apply() = new NewCommentsCommand
 }
